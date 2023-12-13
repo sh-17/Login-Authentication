@@ -6,8 +6,13 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from .models import User
-from .serializers import UserRegistrationSerializer, UserChangePasswordSerializer, UserLoginSerializer, \
-    UserProfileSerializer, UserUpdateSerializer, LogoutSerializer
+from .serializers import (UserRegistrationSerializer,
+                          UserChangePasswordSerializer,
+                          UserLoginSerializer,
+                          UserProfileSerializer,
+                          UserUpdateSerializer,
+                          LogoutSerializer
+                          )
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -133,6 +138,7 @@ class LoginWithOTP(APIView):
         # send_otp_phone(phone_number, otp)
 
         return Response({'message': 'OTP has been sent to your email.'}, status=status.HTTP_200_OK)
+
 
 class ResetPasswordWithOTP(APIView):
     def post(self, request):
