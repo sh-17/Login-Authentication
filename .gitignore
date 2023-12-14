@@ -141,3 +141,7 @@ GitHub.sublime-settings
 *.sql
 *.sqlite
 account/migrations/
+
+# Ignore log files
+logs/
+*.log
