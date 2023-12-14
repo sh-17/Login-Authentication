@@ -16,8 +16,10 @@ from rest_framework.permissions import IsAuthenticated
 from .utils import send_otp_email, send_password_email, success_false_response, success_true_response
 
 
+from datetime import timedelta
+
 # Configure logging
-# logger = logging.getLogger("api.views")
+logger = logging.getLogger("account.views")
 
 
 # Create your views here.
@@ -30,16 +32,19 @@ def get_tokens_for_user(user):
 
 
 class UserRegistrationView(APIView):
-        def post(self, request, format=None):
-            try:
-                serializer = UserRegistrationSerializer(data=request.data)
-                if serializer.is_valid(raise_exception=True):
-                    user = serializer.save()
-                    token = get_tokens_for_user(user)
-                    # logger.info('Data listed successfully')
-                return Response(success_true_response({'token': token, 'message': 'User Register Successfully'}, data=serializer.data))
-            except Exception as e:
-                return Response(success_false_response(message='Failed to Registered', data={'error': str(e)}))
+    def post(self, request, format=None):
+        try:
+            serializer = UserRegistrationSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                user = serializer.save()
+                token = get_tokens_for_user(user)
+                logger.info('Data Registered successfully')
+            return Response(
+                success_true_response({'token': token, 'message': 'User Register Successfully'}, data=serializer.data))
+        except Exception as e:
+            logger.error(f"An error occurred while registration: {e}")  # Log error message
+
+            return Response(success_false_response(message='Failed to Registered', data={'error': str(e)}))
 
 
 class UserLoginView(APIView):
@@ -50,11 +55,16 @@ class UserLoginView(APIView):
         email = serializer.data.get('email')
         password = serializer.data.get('password')
         user = authenticate(email=email, password=password)
+
         if user is not None:
             token = get_tokens_for_user(user)
-            return Response(success_true_response({'token': token, 'message':'User Login successfully'}, data=serializer.data))
+            logger.info('User Login Successfully')
+            return Response(
+                success_true_response({'token': token, 'message': 'User Login successfully'}, data=serializer.data))
+
         elif Exception:
-            return Response(success_false_response({'message':"Email and Password doesn't match"}))
+            logger.error(f"Please enter your correct Email & Password")
+            return Response(success_false_response({'message': "Email and Password doesn't match"}))
 
 
 class UserProfileView(APIView):
@@ -63,7 +73,7 @@ class UserProfileView(APIView):
     def get(self, request, format=None):
         try:
             serializer = UserProfileSerializer(request.user)
-            return Response(success_true_response({'message':'Data Retrieving successfully'}, data=serializer.data))
+            return Response(success_true_response({'message': 'Data Retrieving successfully'}, data=serializer.data))
         except Exception as e:
             return Response(success_false_response(message='Failed to retrieve data', data={'error': str(e)}))
 
@@ -75,11 +85,15 @@ class UserChangePasswordView(APIView):
         try:
             serializer = UserChangePasswordSerializer(data=request.data, context={'user': request.user})
             serializer.is_valid(raise_exception=True)
-            return Response(success_true_response({'message':'Password changed successfully'}, data=serializer.data))
+            logger.info('User changed their Password ')
+            return Response(success_true_response({'message': 'Password changed successfully'}, data=serializer.data))
         except Exception as e:
-            return Response(success_false_response(message="Password and Confirm Password doesn't match", data={'error':str(e)}))
+            logger.error(f"Falied to change Password, Please check your password again")
+            return Response(
+                success_false_response(message="Password and Confirm Password doesn't match", data={'error': str(e)}))
 
-class UserUpdateView(APIView):
+
+class UserUpdateProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, format=None):
@@ -87,10 +101,13 @@ class UserUpdateView(APIView):
             serializer = UserUpdateSerializer(instance=request.user, data=request.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                return Response(success_true_response({'message':'User Updated Successfully'}, data=serializer.data))
+                logger.info('User updated their Profile ')
+                return Response(success_true_response({'message': 'User Updated Successfully'}, data=serializer.data))
         except Exception as e:
+            logger.error(f"Falied to Update User Profile")
+
             return Response(success_false_response(message='Failed to update User', data={'error': str(e)}),
-                        status=400)
+                            status=400)
 
 
 class LogoutView(APIView):
@@ -101,13 +118,13 @@ class LogoutView(APIView):
             serializer = LogoutSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             access_token = serializer.validated_data.get('access_token')
-            return Response(success_true_response({'message':'User Logout successfully'}))
+            logger.info('Logout Successfully')
+            return Response(success_true_response({'message': 'User Logout successfully'}))
         except Exception as e:
+            logger.error(f"Failed to logout, enter valid token")
+
             return Response(success_false_response(message='Failed to logout', data={'error': str(e)}),
                             status=400)
-
-from datetime import timedelta
-
 
 class ValidateOTP(APIView):
     def post(self, request):

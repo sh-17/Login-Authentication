@@ -172,10 +172,31 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
+LOGGING_DIR = BASE_DIR / 'logs'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': LOGGING_DIR / 'debug.log',  # Adjust the path as needed
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'DEBUG',  # Adjust the level as needed (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    },
+}
+
 EMAIL_BACKEND = os.getenv('E_BACKEND')
 EMAIL_HOST = os.getenv('E_HOST')
 EMAIL_USE_TLS = os.getenv('E_TLS')
 EMAIL_PORT = os.getenv('E_PORT')
 EMAIL_HOST_USER = os.getenv('E_USER')
 EMAIL_HOST_PASSWORD = os.getenv('E_PASSWORD')
+
 
