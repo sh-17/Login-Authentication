@@ -18,6 +18,7 @@ def send_password_email(email, psd):
     send_mail(subject, message, from_email, recipient_list)
     send_mail(subject, message, from_email, recipient_list)
 
+
 def success_true_response(message=None, data=None, count=None):
     result = dict(success=True)
     result['message'] = message or ''
